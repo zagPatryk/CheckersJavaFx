@@ -1,6 +1,8 @@
 /src/sample/
-/src/Checkers/Ignore/App.java
-/src/Checkers/Ignore/GridPaneTrackingController.fxml
-/src/Checkers/Ignore/GridPaneTrackingController.java
-/src/Checkers/Old/
-/src/Checkers/Ignore/FIle.fxml
+/src/Ignore/App.java
+/src/Ignore/GridPaneTrackingController.fxml
+/src/Ignore/GridPaneTrackingController.java
+/src/Old/
+/src/Ignore/FIle.fxml
+/src/Old/
+/src/Ignore/

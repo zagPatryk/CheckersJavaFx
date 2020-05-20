@@ -1,18 +1,21 @@
-package Checkers;
+package Checkers.BoardComponents;
 
+import Checkers.StoringData.Position;
 import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 
-public class Pawn extends Circle implements GameBase {
+public class Pawn extends Circle {
     private final boolean isRed;
     private Position position = null;
+    private boolean superPawn = false;
+    private boolean nextMoveKill = false;
 
     public Pawn(Position position, boolean isRed) {
         this.position = position;
         this.isRed = isRed;
 
-        setRadius(fieldSize * 0.4);
+        setRadius(80 * 0.4);
 
         if (isRed) {
             setMouseTransparent(false);
@@ -23,8 +26,8 @@ public class Pawn extends Circle implements GameBase {
         }
     }
 
-    public void setPosition(Position position) {
-        this.position = position;
+    public void setPosition(Position newPosition) {
+        this.position = newPosition;
     }
 
     public Position getPosition() {
@@ -39,13 +42,29 @@ public class Pawn extends Circle implements GameBase {
         return isRed;
     }
 
+    public void setSuperPawn(boolean superPawn) {
+        this.superPawn = superPawn;
+        setOpacity(0.7);
+    }
+
+    public boolean isSuperPawn() {
+        return superPawn;
+    }
+
+    public boolean isNextMoveKill() {
+        return nextMoveKill;
+    }
+
+    public void setNextMoveKill(boolean nextMoveKill) {
+        this.nextMoveKill = nextMoveKill;
+    }
+
     @Override
     public String toString() {
         return "Pawn{" +
                 "isRed=" + isRed +
                 ", position=" + position +
+                ", superPawn=" + superPawn +
                 '}';
     }
-
-
 }

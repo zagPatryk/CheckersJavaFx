@@ -1,5 +1,9 @@
 package Checkers;
 
+import Checkers.BoardComponents.Field;
+import Checkers.BoardComponents.Pawn;
+import Checkers.StoringData.ComputerMove;
+import Checkers.StoringData.Position;
 import javafx.application.Application;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -14,20 +18,32 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+
+
 import java.util.HashMap;
 import java.util.Map;
 
-import static Checkers.GameBase.*;
+import java.awt.*;
+import static java.awt.event.InputEvent.BUTTON1_DOWN_MASK;
+
+import static java.lang.Thread.sleep;
 
 public class GameRunner extends Application {
     private Map<Position, Pawn> pawnMap = new HashMap<>();
     private Round round = new Round();
-    private Move moveType = new Move();
+    private Move move = new Move();
+    private ComputerPlayer computerPlayer = null;
 
-    Stage window;
-    Scene menuScene;
-    Scene choseColorForPlayerScene;
-    Scene gameScene;
+    private int fieldSize = 80;
+    private int boardWidth = 8;
+    private int boardHeight = 8;
+
+    private Stage window;
+    private Scene menuScene; // zobaczyć czego szare
+    private Scene choseColorForPlayerScene;
+    private Scene gameScene;
+
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -36,6 +52,10 @@ public class GameRunner extends Application {
         primaryStage.setTitle("Checkers");
         primaryStage.setScene(new Scene(getMenu(), 600, 200));
         primaryStage.show();
+
+//        while (true) {
+//            changePositionByComputer(pawnMap,);
+//        }
     }
 
     public Parent getMenu() {
@@ -58,16 +78,14 @@ public class GameRunner extends Application {
         gridMenu.add(hBoxTwoPlayersButton, 1, 5);
 
         onePlayerButton.setOnAction( e -> {
-            // dodać ustaw tryb
             window.setScene(getChoseColorScene());
         });
 
         twoPlayersButton.setOnAction( e -> {
-            // dodać ustaw tryb
             window.setScene(getGameScene());
         });
 
-        return gridMenu;
+        return gridMenu; // zamienić w klase
     }
 
     public Scene getChoseColorScene() {
@@ -94,13 +112,19 @@ public class GameRunner extends Application {
         gridChoseColor.add(hBoxBlueButton, 3, 4);
 
         redButton.setOnAction( e -> {
-            // dodać ustaw kolor gracza
+            computerPlayer = new ComputerPlayer(false);
             window.setScene(getGameScene());
         });
 
         blueButton.setOnAction( e -> {
-            // dodać ustaw kolor gracza
+            computerPlayer = new ComputerPlayer(true);
             window.setScene(getGameScene());
+
+            round.changePlayer();
+            ComputerMove computerMove = computerPlayer.decideComputerNewPosition(pawnMap);
+            changePositionByComputer(computerMove);
+            round.changePlayer();
+
         });
         choseColorForPlayerScene = new Scene(gridChoseColor, 400, 200);
         return choseColorForPlayerScene;
@@ -129,7 +153,7 @@ public class GameRunner extends Application {
                     if (i <= 2) {
                         pawn = createPawn(new Position(j,i), true);
                     }
-                    else if (i >= boardHeight-3) {
+                    else if (i >= boardHeight - 3) {
                         pawn = createPawn(new Position(j,i), false);
                     }
 
@@ -140,6 +164,7 @@ public class GameRunner extends Application {
                         GridPane.setValignment(pawn, VPos.CENTER);
                         GridPane.setHalignment(pawn, HPos.CENTER);
                         grid.getChildren().add(pawn);
+                        pawn.toFront();
                     }
                 }
             }
@@ -154,105 +179,116 @@ public class GameRunner extends Application {
         pawn.setOnMousePressed(e -> {
             pawn.setRadius(fieldSize * 0.5);
         });
-// dodać kill do tyłu
-// dodać tworzenie kingów na ostatnim rzędzie
+
         pawn.setOnMouseReleased(e -> {
             pawn.setRadius(fieldSize * 0.4);
+            boolean whichPlayerMove = round.isRedMove();
             Position newPosition = new Position((int) (e.getSceneX() - 120) / 80, (int) (e.getSceneY() - 120) / 80);
-
-            switch (moveType.moveType(pawnMap, pawn, newPosition)) {
+            switch (move.moveType(pawnMap, pawn, newPosition)) {
+                case NONE:
+                    break;
                 case MOVE:
                     round.changePlayer();
-                    pawnMap.remove(pawn.getPosition());
-                    pawnMap.put(newPosition, pawn);
-                    pawn.setPosition(newPosition);
-                    GridPane.setColumnIndex(pawn, newPosition.getX());
-                    GridPane.setRowIndex(pawn, newPosition.getY());
+                    changePositionOfPawn(pawn, newPosition);
                     round.setPawnMobility(pawnMap);
                     break;
                 case KILL:
-                    if (pawn.getIsRed()) {
-                        pawnMap.get(new Position(pawn.getPosition().getX() + ((newPosition.getX() - pawn.getPosition().getX()) / 2),
-                                newPosition.getY() - 1)).setRadius(0);
-                        pawnMap.remove(new Position(pawn.getPosition().getX() + ((newPosition.getX() - pawn.getPosition().getX()) / 2),
-                                newPosition.getY() - 1));
-                    } else {
-                        pawnMap.get(new Position(pawn.getPosition().getX() + ((newPosition.getX() - pawn.getPosition().getX()) / 2),
-                                (newPosition.getY() + 1))).setRadius(0);
-                        pawnMap.remove(new Position(pawn.getPosition().getX() + ((newPosition.getX() - pawn.getPosition().getX()) / 2),
-                                (newPosition.getY() + 1)));
-                    }
+                    round.killPawn(pawnMap, pawn, newPosition);
+                    changePositionOfPawn(pawn, newPosition);
+                    pawn.setNextMoveKill(false);
 
-                    pawnMap.remove(pawn.getPosition());
-                    pawnMap.put(newPosition, pawn);
-                    pawn.setPosition(newPosition);
-                    GridPane.setColumnIndex(pawn, newPosition.getX());
-                    GridPane.setRowIndex(pawn, newPosition.getY());
-
-                    if (pawn.getIsRed()) {
-                        if (pawnMap.containsKey(new Position(pawn.getPosition().getX() - 1, pawn.getPosition().getY() + 1))
-                                && !pawnMap.containsKey(new Position(pawn.getPosition().getX() - 2, pawn.getPosition().getY() + 2))
-                                && (pawn.getPosition().getX() - 2) >= 0 && (pawn.getPosition().getY() + 2)<= 7) {
-                            if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() - 1, pawn.getPosition().getY() + 1)).getIsRed()) {
-                                round.changePlayer();
-                                round.setPawnMobility(pawnMap);
-                            } else {
-                                round.setPawnMobilityAfterKill(pawnMap, pawn);
-                            }
-                        } else if (pawnMap.containsKey(new Position(pawn.getPosition().getX() + 1, pawn.getPosition().getY() + 1))
-                                && !pawnMap.containsKey(new Position(pawn.getPosition().getX() + 2, pawn.getPosition().getY() + 2))
-                                && pawn.getPosition().getX() + 2 <= 7 && pawn.getPosition().getY() + 2 <= 7) {
-                            if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() + 1, pawn.getPosition().getY() + 1)).getIsRed()) {
-                                round.changePlayer();
-                                round.setPawnMobility(pawnMap);
-                            } else {
-                                round.setPawnMobilityAfterKill(pawnMap, pawn);
-                            }
-                        } else {
-                            round.changePlayer();
-                            round.setPawnMobility(pawnMap);
-                        }
+                    if (move.pawnPossibleKillMoves(pawnMap, pawn).containsKey(pawn)) {
+                        pawn.setNextMoveKill(true);
+                        round.setPawnMobilityAfterKill(pawnMap, pawn);
                     } else {
-                        if (pawnMap.containsKey(new Position(pawn.getPosition().getX() - 1, pawn.getPosition().getY() - 1))
-                                && !pawnMap.containsKey(new Position(pawn.getPosition().getX() - 2, pawn.getPosition().getY() - 2))
-                                && (pawn.getPosition().getX() - 2) >= 0 && (pawn.getPosition().getY() - 2) >= 0) {
-                            if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() - 1, pawn.getPosition().getY() - 1)).getIsRed()) {
-                                round.changePlayer();
-                                round.setPawnMobility(pawnMap);
-                            } else {
-                                round.setPawnMobilityAfterKill(pawnMap, pawn);
-                            }
-                        } else if (pawnMap.containsKey(new Position(pawn.getPosition().getX() + 1, pawn.getPosition().getY() - 1))
-                                && !pawnMap.containsKey(new Position(pawn.getPosition().getX() + 2, pawn.getPosition().getY() - 2))
-                                && pawn.getPosition().getX() + 2 <= 7 && pawn.getPosition().getY() - 2 >= 0) {
-                            if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() + 1, pawn.getPosition().getY() - 1)).getIsRed()) {
-                                round.changePlayer();
-                                round.setPawnMobility(pawnMap);
-                            } else {
-                                round.setPawnMobilityAfterKill(pawnMap, pawn);
-                            }
-                        } else {
-                            round.changePlayer();
-                            round.setPawnMobility(pawnMap);
-                        }
+                        round.changePlayer();
+                        round.setPawnMobility(pawnMap);
                     }
                     break;
                 default:
                     break;
             }
 
+            if (pawn.getIsRed()) {
+                if (pawn.getPosition().getY() == 7) {
+                    pawn.setSuperPawn(true);
+                }
+            } else {
+                if (pawn.getPosition().getY() == 0) {
+                    pawn.setSuperPawn(true);
+                }
+            }
+
+// nie przenosi do menu. Scena zatrzymana z powiększonym pionkiem i bez killa
             if (round.remainingPawns(pawnMap, true) == 0) {
                 System.out.println("Blue Won");
-                window.setScene(menuScene);
+                window.setScene(menuScene);  // to nie działa jak powinno
             } else if (round.remainingPawns(pawnMap, false) == 0) {
                 System.out.println("Red Won");
                 window.setScene(menuScene);
             }
+
+            if (computerPlayer != null) {
+                if (computerPlayer.isRedPlayer() == round.isRedMove()) {
+                    tryCounter = 0;
+                    ComputerMove computerMove = computerPlayer.decideComputerNewPosition(pawnMap);
+                    changePositionByComputer(computerMove);
+                }
+            }
+
         });
         return pawn;
     }
 
+    public void changePositionOfPawn(Pawn pawn, Position newPosition) {
+        pawnMap.remove(pawn.getPosition());
+        pawnMap.put(newPosition, pawn);
+        pawn.setPosition(newPosition);
+        GridPane.setColumnIndex(pawn, newPosition.getX());
+        GridPane.setRowIndex(pawn, newPosition.getY());
+        pawn.toFront();
+    }
+
     public static void main(String[] args) {
         launch(args);
+    }
+
+    int tryCounter;
+
+    public void changePositionByComputer(ComputerMove computerMove) {
+        if (tryCounter < 10) {
+            try {
+                System.out.println(computerMove.getPawn());
+                System.out.println("===================");
+                int x = (int) (window.getX() + 100 + 80 * (computerMove.getPawn().getPosition().getX() + 1));
+                int y = (int) (window.getY() + 100 + 80 * (computerMove.getPawn().getPosition().getY() + 1));
+                Robot robot = null;
+                Point position = MouseInfo.getPointerInfo().getLocation();
+
+                try {
+                    robot = new Robot();
+                } catch (AWTException e) {
+                    e.printStackTrace();
+                }
+                robot.mouseMove(x, y);
+                robot.mousePress(BUTTON1_DOWN_MASK);
+                robot.mouseMove(position.x, position.y);
+
+                try {
+                    sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                x = (int) (window.getX() + 100 + 80 * (computerMove.getNewPosition().getX() + 1));
+                y = (int) (window.getY() + 100 + 80 * (computerMove.getNewPosition().getY() + 1));
+                robot.mouseMove(x, y);
+                robot.mouseRelease(BUTTON1_DOWN_MASK);
+                robot.mouseMove(position.x, position.y);
+            } catch (NullPointerException e) {
+                System.out.println(e);
+            }
+            tryCounter++;
+        }
     }
 }

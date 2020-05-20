@@ -1,11 +1,11 @@
-package Checkers;
+package Checkers.BoardComponents;
 
 import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import java.util.Objects;
 
-public class Field extends Rectangle implements GameBase{
+public class Field extends Rectangle{
     private final int positionX;
     private final int positionY;
 
@@ -18,11 +18,10 @@ public class Field extends Rectangle implements GameBase{
         } else {
             setFill(new ImagePattern(new Image("file:src/resources/Checkers/whiteF.png")));
         }
-
-        setOpacity(0.5);
+    toBack();
         setMouseTransparent(true);
-        setWidth(fieldSize);
-        setHeight(fieldSize);
+        setWidth(80);
+        setHeight(80);
     }
 
     @Override

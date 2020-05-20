@@ -1,9 +1,18 @@
 package Checkers;
 
+import Checkers.BoardComponents.Pawn;
+import Checkers.StoringData.Position;
+
 import java.util.Map;
+
+import static java.lang.Math.abs;
 
 public class Round {
     boolean isRedMove = true;
+
+    public boolean isRedMove() {
+        return isRedMove;
+    }
 
     public void changePlayer() {
         isRedMove = !isRedMove;
@@ -35,5 +44,33 @@ public class Round {
             }
         }
         return remainingPawns;
+    }
+
+    public void killPawn(Map<Position, Pawn> pawnMap, Pawn pawn, Position newPosition) {
+        int deltaX= 0;
+        int deltaY = 0;
+        int loop = abs(pawn.getPosition().getX() - newPosition.getX()) - 1;
+        for (int i = 0; i < loop; i++) {
+            if (pawn.getPosition().getX() - newPosition.getX() > 0) {
+                deltaX--;
+            } else if (pawn.getPosition().getX() - newPosition.getX() < 0) {
+                deltaX++;
+            }
+            if (pawn.getPosition().getY() - newPosition.getY() > 0) {
+                deltaY--;
+            } else if (pawn.getPosition().getY() - newPosition.getY() < 0) {
+                deltaY++;
+            }
+            if (pawnMap.containsKey(new Position(pawn.getPosition().getX() + deltaX,
+                    pawn.getPosition().getY() + deltaY))) {
+                if (pawnMap.get(new Position(pawn.getPosition().getX() + deltaX,
+                        pawn.getPosition().getY() + deltaY)).getIsRed() != pawn.getIsRed()) {
+                    pawnMap.get(new Position(pawn.getPosition().getX() + deltaX,
+                            pawn.getPosition().getY() + deltaY)).setRadius(0);
+                    pawnMap.remove(new Position(pawn.getPosition().getX() + deltaX,
+                            pawn.getPosition().getY() + deltaY));
+                }
+            }
+        }
     }
 }

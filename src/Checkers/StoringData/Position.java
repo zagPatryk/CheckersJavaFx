@@ -1,4 +1,4 @@
-package Checkers;
+package Checkers.StoringData;
 
 import java.util.Objects;
 
