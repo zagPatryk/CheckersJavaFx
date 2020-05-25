@@ -4,18 +4,15 @@ import Checkers.BoardComponents.Pawn;
 import Checkers.StoringData.Direction;
 import Checkers.StoringData.MoveType;
 import Checkers.StoringData.Position;
+import static Checkers.StoringData.MoveType.*;
 
 import java.util.*;
 
-import static Checkers.StoringData.MoveType.*;
 import static java.lang.Math.abs;
 
 public class Move{
-    private final int boardWidth = 8;
-    private final int boardHeight = 8;
-
     public MoveType moveType(Map<Position, Pawn> pawnMap, Pawn pawn, Position newPosition) {
-        if ((newPosition.getX() < 0 || newPosition.getX() >= boardWidth || newPosition.getY() < 0 || newPosition.getY() >= boardHeight )) {
+        if ((newPosition.getX() < 0 || newPosition.getX() >= 8 || newPosition.getY() < 0 || newPosition.getY() >= 8 )) {
             return NONE;
         }
 
@@ -141,78 +138,112 @@ public class Move{
         boolean dropFtLoop = false;
 
         for (int i = 0; i < mobilityLoop; i++) {
-            if (!dropFirstLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() - delta, pawn.getPosition().getY() + delta))
-                    && !pawnMap.containsKey(new Position(pawn.getPosition().getX() - (delta + 1), pawn.getPosition().getY() + (delta + 1)))
-                    && (pawn.getPosition().getX() - (delta + 1)) >= 0 && (pawn.getPosition().getY() + (delta + 1))<= 7) {
-                if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() - delta,
-                        pawn.getPosition().getY() + delta)).getIsRed()) {
-                    dropFirstLoop = true;
+            if (!dropFirstLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() - delta, pawn.getPosition().getY() + delta))) {
+                if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() - (delta + 1), pawn.getPosition().getY() + (delta + 1)))
+                        && (pawn.getPosition().getX() - (delta + 1)) >= 0 && (pawn.getPosition().getY() + (delta + 1))<= 7) {
+                    if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() - delta,
+                            pawn.getPosition().getY() + delta)).getIsRed()) {
+                        dropFirstLoop = true;
+                    } else {
+                        dropFirstLoop = true;
+                        pawnPossibleKillMoves.put(pawn, Direction.DOWN_LEFT);
+                    }
                 } else {
                     dropFirstLoop = true;
-                    pawnPossibleKillMoves.put(pawn, Direction.DOWN_LEFT);
                 }
             }
 
-            if (!dropSecLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() + delta))
-                    && !pawnMap.containsKey(new Position(pawn.getPosition().getX() + (delta + 1), pawn.getPosition().getY() + (delta + 1)))
-                    && (pawn.getPosition().getX() + (delta + 1)) <= 7 && (pawn.getPosition().getY() + (delta + 1)) <= 7) {
-                if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() + delta)).getIsRed()) {
-                    dropSecLoop = true;
+            if (!dropSecLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() + delta))) {
+                if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() + (delta + 1), pawn.getPosition().getY() + (delta + 1)))
+                        && (pawn.getPosition().getX() + (delta + 1)) <= 7 && (pawn.getPosition().getY() + (delta + 1)) <= 7) {
+                    if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() + delta)).getIsRed()) {
+                        dropSecLoop = true;
+                    } else {
+                        dropSecLoop = true;
+                        pawnPossibleKillMoves.put(pawn, Direction.DOWN_RIGHT);
+                    }
                 } else {
                     dropSecLoop = true;
-                    pawnPossibleKillMoves.put(pawn, Direction.DOWN_RIGHT);
                 }
             }
 
-            if (!dropThLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() - delta, pawn.getPosition().getY() - delta))
-                    && !pawnMap.containsKey(new Position(pawn.getPosition().getX() - (delta + 1), pawn.getPosition().getY() - (delta + 1)))
-                    && (pawn.getPosition().getX() - (delta + 1)) >= 0 && (pawn.getPosition().getY() - (delta + 1)) >= 0) {
-                if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() - delta, pawn.getPosition().getY() - delta)).getIsRed()) {
-                    dropThLoop = true;
+            if (!dropThLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() - delta, pawn.getPosition().getY() - delta))) {
+                if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() - (delta + 1), pawn.getPosition().getY() - (delta + 1)))
+                        && (pawn.getPosition().getX() - (delta + 1)) >= 0 && (pawn.getPosition().getY() - (delta + 1)) >= 0) {
+                    if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() - delta, pawn.getPosition().getY() - delta)).getIsRed()) {
+                        dropThLoop = true;
+                    } else {
+                        dropThLoop = true;
+                        pawnPossibleKillMoves.put(pawn, Direction.UP_LEFT);
+                    }
                 } else {
                     dropThLoop = true;
-                    pawnPossibleKillMoves.put(pawn, Direction.UP_LEFT);
                 }
             }
 
-            if (!dropFtLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() - delta))
-                    && !pawnMap.containsKey(new Position(pawn.getPosition().getX() + (delta + 1), pawn.getPosition().getY() - (delta + 1)))
-                    && (pawn.getPosition().getX() + (delta + 1)) <= 7 && (pawn.getPosition().getY() - (delta + 1)) >= 0) {
-                if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() - delta)).getIsRed()) {
-                    dropFtLoop = true;
-                } else {
-                    dropFtLoop = true;
-                    pawnPossibleKillMoves.put(pawn, Direction.UP_RIGHT);
-                }
-            }
-            delta++;
+           if (!dropFtLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() - delta))) {
+               if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() + (delta + 1), pawn.getPosition().getY() - (delta + 1)))
+                       && (pawn.getPosition().getX() + (delta + 1)) <= 7 && (pawn.getPosition().getY() - (delta + 1)) >= 0) {
+                   if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() - delta)).getIsRed()) {
+                       dropFtLoop = true;
+                   } else {
+                       dropFtLoop = true;
+                       pawnPossibleKillMoves.put(pawn, Direction.UP_RIGHT);
+                   }
+               } else {
+                   dropFtLoop = true;
+               }
+           }
+           delta++;
         }
         return pawnPossibleKillMoves;
     }
 
     public Map<Pawn, Direction> pawnPossibleMoves(Map<Position, Pawn> pawnMap, Pawn pawn) {
         Map<Pawn, Direction> pawnPossibleMoves = new HashMap<>();
+        if (pawn.isSuperPawn()) {
+            if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() - 1, pawn.getPosition().getY() + 1))
+                    && (pawn.getPosition().getX() - 1) >= 0 && (pawn.getPosition().getY() + 1) <= 7) {
+                pawnPossibleMoves.put(pawn, Direction.DOWN_LEFT);
+            }
 
-        if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() - 1, pawn.getPosition().getY() + 1))
-                && (pawn.getPosition().getX() - 1) >= 0 && (pawn.getPosition().getY() + 1) <= 7) {
-            pawnPossibleMoves.put(pawn, Direction.DOWN_LEFT);
+            if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() + 1, pawn.getPosition().getY() + 1))
+                    && (pawn.getPosition().getX() + 1) <= 7 && (pawn.getPosition().getY() + 1) <= 7) {
+                pawnPossibleMoves.put(pawn, Direction.DOWN_RIGHT);
+            }
+
+            if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() - 1, pawn.getPosition().getY() - 1))
+                    && (pawn.getPosition().getX() - 1) >= 0 && (pawn.getPosition().getY() - 1) >= 0) {
+                pawnPossibleMoves.put(pawn, Direction.UP_LEFT);
+            }
+
+            if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() + 1, pawn.getPosition().getY() - 1))
+                    && (pawn.getPosition().getX() + 1) <= 7 && (pawn.getPosition().getY() - 1) >= 0) {
+                pawnPossibleMoves.put(pawn, Direction.UP_RIGHT);
+            }
+        } else {
+            if (pawn.getIsRed()) {
+                if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() - 1, pawn.getPosition().getY() + 1))
+                        && (pawn.getPosition().getX() - 1) >= 0 && (pawn.getPosition().getY() + 1) <= 7) {
+                    pawnPossibleMoves.put(pawn, Direction.DOWN_LEFT);
+                }
+
+                if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() + 1, pawn.getPosition().getY() + 1))
+                        && (pawn.getPosition().getX() + 1) <= 7 && (pawn.getPosition().getY() + 1) <= 7) {
+                    pawnPossibleMoves.put(pawn, Direction.DOWN_RIGHT);
+                }
+            } else {
+                if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() - 1, pawn.getPosition().getY() - 1))
+                        && (pawn.getPosition().getX() - 1) >= 0 && (pawn.getPosition().getY() - 1) >= 0) {
+                    pawnPossibleMoves.put(pawn, Direction.UP_LEFT);
+                }
+
+                if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() + 1, pawn.getPosition().getY() - 1))
+                        && (pawn.getPosition().getX() + 1) <= 7 && (pawn.getPosition().getY() - 1) >= 0) {
+                    pawnPossibleMoves.put(pawn, Direction.UP_RIGHT);
+                }
+            }
         }
-
-        if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() + 1, pawn.getPosition().getY() + 1))
-                && (pawn.getPosition().getX() + 1) <= 7 && (pawn.getPosition().getY() + 1) <= 7) {
-            pawnPossibleMoves.put(pawn, Direction.DOWN_RIGHT);
-        }
-
-        if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() - 1, pawn.getPosition().getY() - 1))
-                && (pawn.getPosition().getX() - 1) >= 0 && (pawn.getPosition().getY() - 1) >= 0) {
-            pawnPossibleMoves.put(pawn, Direction.UP_LEFT);
-        }
-
-        if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() + 1, pawn.getPosition().getY() - 1))
-                && (pawn.getPosition().getX() + 1 ) <= 7 && (pawn.getPosition().getY() - 1) >= 0) {
-            pawnPossibleMoves.put(pawn, Direction.UP_RIGHT);
-        }
-
         return pawnPossibleMoves;
     }
 

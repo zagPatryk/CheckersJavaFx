@@ -3,8 +3,8 @@ package Checkers.StoringData;
 import Checkers.BoardComponents.Pawn;
 
 public class ComputerMove {
-    Position newPosition;
-    Pawn pawn;
+    private Position newPosition;
+    private Pawn pawn;
 
     public ComputerMove(Pawn pawn, Position newPosition) {
         this.newPosition = newPosition;
@@ -13,10 +13,6 @@ public class ComputerMove {
 
     public Position getNewPosition() {
         return newPosition;
-    }
-
-    public void setNewPosition(Position newPosition) {
-        this.newPosition = newPosition;
     }
 
     public Pawn getPawn() {

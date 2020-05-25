@@ -4,6 +4,7 @@ import Checkers.BoardComponents.Field;
 import Checkers.BoardComponents.Pawn;
 import Checkers.StoringData.ComputerMove;
 import Checkers.StoringData.Position;
+
 import javafx.application.Application;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -16,46 +17,42 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-
-
+import javafx.stage.StageStyle;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import java.awt.*;
-import static java.awt.event.InputEvent.BUTTON1_DOWN_MASK;
 
+import static java.awt.event.InputEvent.BUTTON1_DOWN_MASK;
 import static java.lang.Thread.sleep;
 
 public class GameRunner extends Application {
     private Map<Position, Pawn> pawnMap = new HashMap<>();
     private Round round = new Round();
     private Move move = new Move();
-    private ComputerPlayer computerPlayer = null;
 
-    private int fieldSize = 80;
-    private int boardWidth = 8;
-    private int boardHeight = 8;
+    private ComputerPlayer computerPlayer = null;
+    private int tryCounter;
 
     private Stage window;
-    private Scene menuScene; // zobaczyć czego szare
+    private Scene menuScene;
     private Scene choseColorForPlayerScene;
     private Scene gameScene;
 
 
-
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage){
         window = primaryStage;
+        menuScene = new Scene(getMenu(), 600, 200);
 
         primaryStage.setTitle("Checkers");
-        primaryStage.setScene(new Scene(getMenu(), 600, 200));
+        primaryStage.setScene(menuScene);
+        primaryStage.centerOnScreen();
         primaryStage.show();
 
-//        while (true) {
-//            changePositionByComputer(pawnMap,);
-//        }
     }
 
     public Parent getMenu() {
@@ -85,7 +82,7 @@ public class GameRunner extends Application {
             window.setScene(getGameScene());
         });
 
-        return gridMenu; // zamienić w klase
+        return gridMenu;
     }
 
     public Scene getChoseColorScene() {
@@ -114,11 +111,13 @@ public class GameRunner extends Application {
         redButton.setOnAction( e -> {
             computerPlayer = new ComputerPlayer(false);
             window.setScene(getGameScene());
+            window.centerOnScreen();
         });
 
         blueButton.setOnAction( e -> {
             computerPlayer = new ComputerPlayer(true);
             window.setScene(getGameScene());
+            window.centerOnScreen();
 
             round.changePlayer();
             ComputerMove computerMove = computerPlayer.decideComputerNewPosition(pawnMap);
@@ -141,8 +140,8 @@ public class GameRunner extends Application {
         grid.setPadding(new Insets(120, 120, 120, 120));
         grid.setBackground(background);
 
-        for (int i = 0; i < boardHeight; i++) {
-            for (int j = 0; j < boardWidth; j++) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 Field field = new Field(j,i,(i + j) % 2 != 0);
                 GridPane.setRowIndex(field, i);
                 GridPane.setColumnIndex(field, j);
@@ -153,7 +152,7 @@ public class GameRunner extends Application {
                     if (i <= 2) {
                         pawn = createPawn(new Position(j,i), true);
                     }
-                    else if (i >= boardHeight - 3) {
+                    else if (i >= 5) {
                         pawn = createPawn(new Position(j,i), false);
                     }
 
@@ -177,16 +176,14 @@ public class GameRunner extends Application {
         Pawn pawn = new Pawn(position, color);
 
         pawn.setOnMousePressed(e -> {
-            pawn.setRadius(fieldSize * 0.5);
+            pawn.setRadius(40);
         });
 
         pawn.setOnMouseReleased(e -> {
-            pawn.setRadius(fieldSize * 0.4);
-            boolean whichPlayerMove = round.isRedMove();
+            pawn.setRadius(35);
+
             Position newPosition = new Position((int) (e.getSceneX() - 120) / 80, (int) (e.getSceneY() - 120) / 80);
             switch (move.moveType(pawnMap, pawn, newPosition)) {
-                case NONE:
-                    break;
                 case MOVE:
                     round.changePlayer();
                     changePositionOfPawn(pawn, newPosition);
@@ -205,6 +202,7 @@ public class GameRunner extends Application {
                         round.setPawnMobility(pawnMap);
                     }
                     break;
+                case NONE:
                 default:
                     break;
             }
@@ -219,13 +217,12 @@ public class GameRunner extends Application {
                 }
             }
 
-// nie przenosi do menu. Scena zatrzymana z powiększonym pionkiem i bez killa
-            if (round.remainingPawns(pawnMap, true) == 0) {
-                System.out.println("Blue Won");
-                window.setScene(menuScene);  // to nie działa jak powinno
-            } else if (round.remainingPawns(pawnMap, false) == 0) {
-                System.out.println("Red Won");
-                window.setScene(menuScene);
+            if (round.remainingPawns(pawnMap, true) == 0
+                    || move.allPawnsReadyToMove(pawnMap).stream().noneMatch(f -> f.getIsRed())) {
+                end("Blue won");
+            } else if (round.remainingPawns(pawnMap, false) == 0
+                    || move.allPawnsReadyToMove(pawnMap).stream().noneMatch(f -> !f.getIsRed())) {
+                end("Red won");
             }
 
             if (computerPlayer != null) {
@@ -253,12 +250,12 @@ public class GameRunner extends Application {
         launch(args);
     }
 
-    int tryCounter;
+
 
     public void changePositionByComputer(ComputerMove computerMove) {
-        if (tryCounter < 10) {
+        if (tryCounter < 30) {
             try {
-                System.out.println(computerMove.getPawn());
+                System.out.println(computerMove);
                 System.out.println("===================");
                 int x = (int) (window.getX() + 100 + 80 * (computerMove.getPawn().getPosition().getX() + 1));
                 int y = (int) (window.getY() + 100 + 80 * (computerMove.getPawn().getPosition().getY() + 1));
@@ -270,25 +267,50 @@ public class GameRunner extends Application {
                 } catch (AWTException e) {
                     e.printStackTrace();
                 }
+
                 robot.mouseMove(x, y);
                 robot.mousePress(BUTTON1_DOWN_MASK);
                 robot.mouseMove(position.x, position.y);
 
-                try {
-                    sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
                 x = (int) (window.getX() + 100 + 80 * (computerMove.getNewPosition().getX() + 1));
                 y = (int) (window.getY() + 100 + 80 * (computerMove.getNewPosition().getY() + 1));
+
                 robot.mouseMove(x, y);
                 robot.mouseRelease(BUTTON1_DOWN_MASK);
                 robot.mouseMove(position.x, position.y);
-            } catch (NullPointerException e) {
+                sleep(250);
+            } catch (NullPointerException | InterruptedException e) {
                 System.out.println(e);
             }
             tryCounter++;
+        } else {
+            round.changePlayer();
         }
+    }
+
+    public void end(String whoWin) {
+        VBox endRoot = new VBox(40);
+        endRoot.getChildren().add(new Label(whoWin));
+        endRoot.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8);");
+        endRoot.setAlignment(Pos.CENTER);
+        endRoot.setPadding(new Insets(200));
+
+        Button end = new Button("End");
+        endRoot.getChildren().add(end);
+
+        Stage popupEndStage = new Stage(StageStyle.TRANSPARENT);
+        popupEndStage.initOwner(window);
+        popupEndStage.initModality(Modality.APPLICATION_MODAL);
+        popupEndStage.centerOnScreen();
+        popupEndStage.setScene(new Scene(endRoot));
+
+
+        end.setOnAction(event -> {
+            popupEndStage.close();
+            window.setScene(menuScene);
+            window.centerOnScreen();
+        });
+
+        popupEndStage.show();
     }
 }

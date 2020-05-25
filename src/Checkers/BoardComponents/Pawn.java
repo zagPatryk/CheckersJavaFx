@@ -7,7 +7,7 @@ import javafx.scene.shape.Circle;
 
 public class Pawn extends Circle {
     private final boolean isRed;
-    private Position position = null;
+    private Position position;
     private boolean superPawn = false;
     private boolean nextMoveKill = false;
 
@@ -15,7 +15,7 @@ public class Pawn extends Circle {
         this.position = position;
         this.isRed = isRed;
 
-        setRadius(80 * 0.4);
+        setRadius(35);
 
         if (isRed) {
             setMouseTransparent(false);
@@ -44,7 +44,13 @@ public class Pawn extends Circle {
 
     public void setSuperPawn(boolean superPawn) {
         this.superPawn = superPawn;
-        setOpacity(0.7);
+        if (isRed) {
+            setMouseTransparent(false);
+            setFill(new ImagePattern(new Image("file:src/resources/Checkers/redSuperPawn.png")));
+        } else {
+            setMouseTransparent(true);
+            setFill(new ImagePattern(new Image("file:src/resources/Checkers/blueSuperPawn.png")));
+        }
     }
 
     public boolean isSuperPawn() {
