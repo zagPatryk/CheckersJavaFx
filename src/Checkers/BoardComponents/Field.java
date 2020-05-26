@@ -18,7 +18,6 @@ public class Field extends Rectangle{
         } else {
             setFill(new ImagePattern(new Image("file:src/resources/Checkers/whiteF.png")));
         }
-    toBack();
         setMouseTransparent(true);
         setWidth(80);
         setHeight(80);

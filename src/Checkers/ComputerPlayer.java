@@ -4,12 +4,14 @@ import Checkers.BoardComponents.Pawn;
 import Checkers.StoringData.ComputerMove;
 import Checkers.StoringData.Position;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class ComputerPlayer {
+public class ComputerPlayer  implements Serializable {
+    private static final long serialVersionUID = 99293;
     private Move move = new Move();
     private Random random = new Random();
 
@@ -227,5 +229,11 @@ public class ComputerPlayer {
             System.out.println("Hmmm");
         }
         return new ComputerMove(pawn, newPosition);
+    }
+
+    @Override
+    public String toString() {
+        return "ComputerPlayer{"+ isRedPlayer +
+                '}';
     }
 }

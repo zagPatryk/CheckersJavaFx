@@ -6,11 +6,12 @@ import Checkers.StoringData.MoveType;
 import Checkers.StoringData.Position;
 import static Checkers.StoringData.MoveType.*;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static java.lang.Math.abs;
 
-public class Move{
+public class Move implements Serializable {
     public MoveType moveType(Map<Position, Pawn> pawnMap, Pawn pawn, Position newPosition) {
         if ((newPosition.getX() < 0 || newPosition.getX() >= 8 || newPosition.getY() < 0 || newPosition.getY() >= 8 )) {
             return NONE;
@@ -266,8 +267,6 @@ public class Move{
         }
         return allPawnsReadyToMove;
     }
-
-
 }
 
 

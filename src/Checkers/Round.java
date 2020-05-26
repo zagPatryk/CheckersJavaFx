@@ -3,12 +3,14 @@ package Checkers;
 import Checkers.BoardComponents.Pawn;
 import Checkers.StoringData.Position;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import static java.lang.Math.abs;
 
-public class Round {
-    boolean isRedMove = true;
+public class Round implements Serializable {
+    private static final long serialVersionUID = 99292;
+    private boolean isRedMove = true;
 
     public boolean isRedMove() {
         return isRedMove;
@@ -72,5 +74,12 @@ public class Round {
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Round{" +
+                "isRedMove=" + isRedMove +
+                '}';
     }
 }

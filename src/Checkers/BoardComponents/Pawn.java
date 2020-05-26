@@ -5,7 +5,9 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 
-public class Pawn extends Circle {
+import java.io.Serializable;
+
+public class Pawn extends Circle implements Serializable {
     private final boolean isRed;
     private Position position;
     private boolean superPawn = false;

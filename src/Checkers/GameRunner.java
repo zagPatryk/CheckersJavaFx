@@ -21,6 +21,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,8 +32,13 @@ import static java.lang.Thread.sleep;
 
 public class GameRunner extends Application {
     private Map<Position, Pawn> pawnMap = new HashMap<>();
+    private Map<Position, Pawn> loadedPawnMap = new HashMap<>();
     private Round round = new Round();
     private Move move = new Move();
+
+    private File mapS = new File("MapSave");
+    private File roundS = new File("RoundSave");
+    private File computerS = new File("ComputerSave");
 
     private ComputerPlayer computerPlayer = null;
     private int tryCounter;
@@ -52,7 +58,6 @@ public class GameRunner extends Application {
         primaryStage.setScene(menuScene);
         primaryStage.centerOnScreen();
         primaryStage.show();
-
     }
 
     public Parent getMenu() {
@@ -74,6 +79,12 @@ public class GameRunner extends Application {
         hBoxTwoPlayersButton.getChildren().add(twoPlayersButton);
         gridMenu.add(hBoxTwoPlayersButton, 1, 5);
 
+        Button loadButton = new Button("Load");
+        HBox hBoxLoadButton = new HBox(10);
+        hBoxLoadButton.setAlignment(Pos.CENTER);
+        hBoxLoadButton.getChildren().add(loadButton);
+        gridMenu.add(hBoxLoadButton, 1, 6);
+
         onePlayerButton.setOnAction( e -> {
             window.setScene(getChoseColorScene());
         });
@@ -81,6 +92,13 @@ public class GameRunner extends Application {
         twoPlayersButton.setOnAction( e -> {
             window.setScene(getGameScene());
         });
+
+        loadButton.setOnAction( e -> {
+            if (loadGame()) {
+                window.setScene(getGameScene());
+                round.setPawnMobility(pawnMap);
+            }
+         });
 
         return gridMenu;
     }
@@ -123,8 +141,8 @@ public class GameRunner extends Application {
             ComputerMove computerMove = computerPlayer.decideComputerNewPosition(pawnMap);
             changePositionByComputer(computerMove);
             round.changePlayer();
-
         });
+
         choseColorForPlayerScene = new Scene(gridChoseColor, 400, 200);
         return choseColorForPlayerScene;
     }
@@ -146,28 +164,58 @@ public class GameRunner extends Application {
                 GridPane.setRowIndex(field, i);
                 GridPane.setColumnIndex(field, j);
                 grid.getChildren().add(field);
+            }
+        }
 
-                if ((i + j) % 2 != 0) {
-                    Pawn pawn = null;
-                    if (i <= 2) {
-                        pawn = createPawn(new Position(j,i), true);
-                    }
-                    else if (i >= 5) {
-                        pawn = createPawn(new Position(j,i), false);
-                    }
-
-                    if (pawn != null) {
-                        pawnMap.put(pawn.getPosition(), pawn);
-                        GridPane.setRowIndex(pawn, i);
-                        GridPane.setColumnIndex(pawn, j);
-                        GridPane.setValignment(pawn, VPos.CENTER);
-                        GridPane.setHalignment(pawn, HPos.CENTER);
-                        grid.getChildren().add(pawn);
-                        pawn.toFront();
+        if (loadedPawnMap.isEmpty()) {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    if ((i + j) % 2 != 0) {
+                        Pawn pawn = null;
+                        if (i <= 2) {
+                            pawn = createPawn(new Position(j,i), true);
+                            pawnMap.put(pawn.getPosition(), pawn);
+                        }
+                        else if (i >= 5) {
+                            pawn = createPawn(new Position(j,i), false);
+                            pawnMap.put(pawn.getPosition(), pawn);
+                        }
                     }
                 }
             }
+        } else {
+            for (Map.Entry<Position, Pawn> singlePawnSet : loadedPawnMap.entrySet()) {
+                Pawn singlePawn = singlePawnSet.getValue();
+                Pawn pawn = null;
+                pawn = createPawn(singlePawn.getPosition(), singlePawn.getIsRed());
+                pawnMap.put(pawn.getPosition(), pawn);
+            }
         }
+
+        for (Map.Entry<Position, Pawn> singlePawnSet : pawnMap.entrySet()) {
+            Pawn singlePawn = singlePawnSet.getValue();
+            GridPane.setRowIndex(singlePawn, singlePawn.getPosition().getY());
+            GridPane.setColumnIndex(singlePawn, singlePawn.getPosition().getX());
+            GridPane.setValignment(singlePawn, VPos.CENTER);
+            GridPane.setHalignment(singlePawn, HPos.CENTER);
+            grid.getChildren().add(singlePawn);
+            singlePawn.toFront();
+        }
+
+        Button saveButton = new Button("Save");
+        HBox hBoxSaveButton = new HBox(10);
+        hBoxSaveButton.setAlignment(Pos.CENTER);
+        hBoxSaveButton.getChildren().add(saveButton);
+        hBoxSaveButton.setPadding(new Insets(0, 0, 0, 50));
+        grid.add(hBoxSaveButton, 10, 10);
+
+        saveButton.setOnAction( e -> {
+            saveGame();
+            pawnMap.clear();
+            window.setScene(menuScene);
+            window.centerOnScreen();
+        });
+
         gameScene = new Scene(grid);
         return gameScene;
     }
@@ -232,7 +280,6 @@ public class GameRunner extends Application {
                     changePositionByComputer(computerMove);
                 }
             }
-
         });
         return pawn;
     }
@@ -250,13 +297,9 @@ public class GameRunner extends Application {
         launch(args);
     }
 
-
-
     public void changePositionByComputer(ComputerMove computerMove) {
         if (tryCounter < 30) {
             try {
-                System.out.println(computerMove);
-                System.out.println("===================");
                 int x = (int) (window.getX() + 100 + 80 * (computerMove.getPawn().getPosition().getX() + 1));
                 int y = (int) (window.getY() + 100 + 80 * (computerMove.getPawn().getPosition().getY() + 1));
                 Robot robot = null;
@@ -304,13 +347,79 @@ public class GameRunner extends Application {
         popupEndStage.centerOnScreen();
         popupEndStage.setScene(new Scene(endRoot));
 
-
         end.setOnAction(event -> {
+            pawnMap.clear();
             popupEndStage.close();
             window.setScene(menuScene);
             window.centerOnScreen();
         });
 
         popupEndStage.show();
+    }
+
+    public void saveGame() {
+        System.out.println(round.isRedMove());
+        try {
+            ObjectOutputStream mapSave = new ObjectOutputStream (new FileOutputStream(mapS));
+            mapSave.writeObject(pawnMap);
+            mapSave.close();
+
+            ObjectOutputStream roundSave = new ObjectOutputStream (new FileOutputStream(roundS));
+            roundSave.writeObject(round.isRedMove());
+            roundSave.close();
+
+            ObjectOutputStream computerSave = new ObjectOutputStream (new FileOutputStream(computerS));
+            computerSave.writeObject(computerPlayer);
+            computerSave.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public boolean loadGame() {
+        try {
+            ObjectInputStream mapLoad = new ObjectInputStream(new FileInputStream(mapS));
+            Object readMap = mapLoad.readObject();
+            if(readMap instanceof HashMap) {
+                loadedPawnMap.putAll((HashMap) readMap);
+            } mapLoad.close();
+
+            ObjectInputStream roundLoad = new ObjectInputStream(new FileInputStream(roundS));
+            Object readRound = roundLoad.readObject();
+            if (!readRound.equals(round.isRedMove())) {
+                round.changePlayer();
+            } roundLoad.close();
+
+            ObjectInputStream computerLoad = new ObjectInputStream(new FileInputStream(computerS));
+            Object readComputer = computerLoad.readObject();
+
+            if (readComputer != null) {
+                computerPlayer = new ComputerPlayer(!round.isRedMove());
+            }
+            computerLoad.close();
+
+        } catch (Exception e) {
+            VBox errorRoot = new VBox(40);
+            errorRoot.getChildren().add(new Label("Error"));
+            errorRoot.setStyle("-fx-background-color: rgba(205,26,26,0.8);");
+            errorRoot.setAlignment(Pos.CENTER);
+            errorRoot.setPadding(new Insets(200));
+
+            Button errorButton = new Button("Back to menu");
+            errorRoot.getChildren().add(errorButton);
+
+            Stage popupErrorStage = new Stage(StageStyle.TRANSPARENT);
+            popupErrorStage.initOwner(window);
+            popupErrorStage.initModality(Modality.APPLICATION_MODAL);
+            popupErrorStage.centerOnScreen();
+            popupErrorStage.setScene(new Scene(errorRoot));
+
+            errorButton.setOnAction(event -> {
+                pawnMap.clear();
+                popupErrorStage.close();
+            });
+            popupErrorStage.show();
+            return false;
+        } return true;
     }
 }
