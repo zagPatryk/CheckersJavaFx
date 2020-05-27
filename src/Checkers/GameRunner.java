@@ -211,7 +211,7 @@ public class GameRunner extends Application {
 
         saveButton.setOnAction( e -> {
             saveGame();
-            pawnMap.clear();
+            clearMemory();
             window.setScene(menuScene);
             window.centerOnScreen();
         });
@@ -327,6 +327,7 @@ public class GameRunner extends Application {
             }
             tryCounter++;
         } else {
+            tryCounter = 0;
             round.changePlayer();
         }
     }
@@ -348,7 +349,7 @@ public class GameRunner extends Application {
         popupEndStage.setScene(new Scene(endRoot));
 
         end.setOnAction(event -> {
-            pawnMap.clear();
+            clearMemory();
             popupEndStage.close();
             window.setScene(menuScene);
             window.centerOnScreen();
@@ -358,7 +359,7 @@ public class GameRunner extends Application {
     }
 
     public void saveGame() {
-        System.out.println(round.isRedMove());
+
         try {
             ObjectOutputStream mapSave = new ObjectOutputStream (new FileOutputStream(mapS));
             mapSave.writeObject(pawnMap);
@@ -379,7 +380,9 @@ public class GameRunner extends Application {
     public boolean loadGame() {
         try {
             ObjectInputStream mapLoad = new ObjectInputStream(new FileInputStream(mapS));
-            Object readMap = mapLoad.readObject();
+            Object readMap = null;
+            readMap = mapLoad.readObject();
+            loadedPawnMap.clear();
             if(readMap instanceof HashMap) {
                 loadedPawnMap.putAll((HashMap) readMap);
             } mapLoad.close();
@@ -421,5 +424,15 @@ public class GameRunner extends Application {
             popupErrorStage.show();
             return false;
         } return true;
+    }
+
+    public void clearMemory() {
+        tryCounter = 0;
+        pawnMap.clear();
+        loadedPawnMap.clear();
+        computerPlayer = null;
+        if (!round.isRedMove()) {
+            round.changePlayer();
+        }
     }
 }
