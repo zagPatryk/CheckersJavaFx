@@ -49,7 +49,7 @@ public class Round implements Serializable {
     }
 
     public void killPawn(Map<Position, Pawn> pawnMap, Pawn pawn, Position newPosition) {
-        int deltaX= 0;
+        int deltaX = 0;
         int deltaY = 0;
         int loop = abs(pawn.getPosition().getX() - newPosition.getX()) - 1;
         for (int i = 0; i < loop; i++) {

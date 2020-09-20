@@ -50,7 +50,7 @@ public class GameRunner extends Application {
 
 
     @Override
-    public void start(Stage primaryStage){
+    public void start(Stage primaryStage) {
         window = primaryStage;
         menuScene = new Scene(getMenu(), 600, 200);
 
@@ -85,20 +85,20 @@ public class GameRunner extends Application {
         hBoxLoadButton.getChildren().add(loadButton);
         gridMenu.add(hBoxLoadButton, 1, 6);
 
-        onePlayerButton.setOnAction( e -> {
+        onePlayerButton.setOnAction(e -> {
             window.setScene(getChoseColorScene());
         });
 
-        twoPlayersButton.setOnAction( e -> {
+        twoPlayersButton.setOnAction(e -> {
             window.setScene(getGameScene());
         });
 
-        loadButton.setOnAction( e -> {
+        loadButton.setOnAction(e -> {
             if (loadGame()) {
                 window.setScene(getGameScene());
                 round.setPawnMobility(pawnMap);
             }
-         });
+        });
 
         return gridMenu;
     }
@@ -126,13 +126,13 @@ public class GameRunner extends Application {
         hBoxBlueButton.getChildren().add(blueButton);
         gridChoseColor.add(hBoxBlueButton, 3, 4);
 
-        redButton.setOnAction( e -> {
+        redButton.setOnAction(e -> {
             computerPlayer = new ComputerPlayer(false);
             window.setScene(getGameScene());
             window.centerOnScreen();
         });
 
-        blueButton.setOnAction( e -> {
+        blueButton.setOnAction(e -> {
             computerPlayer = new ComputerPlayer(true);
             window.setScene(getGameScene());
             window.centerOnScreen();
@@ -160,7 +160,7 @@ public class GameRunner extends Application {
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                Field field = new Field(j,i,(i + j) % 2 != 0);
+                Field field = new Field(j, i, (i + j) % 2 != 0);
                 GridPane.setRowIndex(field, i);
                 GridPane.setColumnIndex(field, j);
                 grid.getChildren().add(field);
@@ -173,11 +173,10 @@ public class GameRunner extends Application {
                     if ((i + j) % 2 != 0) {
                         Pawn pawn = null;
                         if (i <= 2) {
-                            pawn = createPawn(new Position(j,i), true);
+                            pawn = createPawn(new Position(j, i), true);
                             pawnMap.put(pawn.getPosition(), pawn);
-                        }
-                        else if (i >= 5) {
-                            pawn = createPawn(new Position(j,i), false);
+                        } else if (i >= 5) {
+                            pawn = createPawn(new Position(j, i), false);
                             pawnMap.put(pawn.getPosition(), pawn);
                         }
                     }
@@ -209,7 +208,7 @@ public class GameRunner extends Application {
         hBoxSaveButton.setPadding(new Insets(0, 0, 0, 50));
         grid.add(hBoxSaveButton, 10, 10);
 
-        saveButton.setOnAction( e -> {
+        saveButton.setOnAction(e -> {
             saveGame();
             clearMemory();
             window.setScene(menuScene);
@@ -361,15 +360,15 @@ public class GameRunner extends Application {
     public void saveGame() {
 
         try {
-            ObjectOutputStream mapSave = new ObjectOutputStream (new FileOutputStream(mapS));
+            ObjectOutputStream mapSave = new ObjectOutputStream(new FileOutputStream(mapS));
             mapSave.writeObject(pawnMap);
             mapSave.close();
 
-            ObjectOutputStream roundSave = new ObjectOutputStream (new FileOutputStream(roundS));
+            ObjectOutputStream roundSave = new ObjectOutputStream(new FileOutputStream(roundS));
             roundSave.writeObject(round.isRedMove());
             roundSave.close();
 
-            ObjectOutputStream computerSave = new ObjectOutputStream (new FileOutputStream(computerS));
+            ObjectOutputStream computerSave = new ObjectOutputStream(new FileOutputStream(computerS));
             computerSave.writeObject(computerPlayer);
             computerSave.close();
         } catch (Exception e) {
@@ -383,15 +382,17 @@ public class GameRunner extends Application {
             Object readMap = null;
             readMap = mapLoad.readObject();
             loadedPawnMap.clear();
-            if(readMap instanceof HashMap) {
+            if (readMap instanceof HashMap) {
                 loadedPawnMap.putAll((HashMap) readMap);
-            } mapLoad.close();
+            }
+            mapLoad.close();
 
             ObjectInputStream roundLoad = new ObjectInputStream(new FileInputStream(roundS));
             Object readRound = roundLoad.readObject();
             if (!readRound.equals(round.isRedMove())) {
                 round.changePlayer();
-            } roundLoad.close();
+            }
+            roundLoad.close();
 
             ObjectInputStream computerLoad = new ObjectInputStream(new FileInputStream(computerS));
             Object readComputer = computerLoad.readObject();
@@ -423,7 +424,8 @@ public class GameRunner extends Application {
             });
             popupErrorStage.show();
             return false;
-        } return true;
+        }
+        return true;
     }
 
     public void clearMemory() {

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class ComputerPlayer  implements Serializable {
+public class ComputerPlayer implements Serializable {
     private static final long serialVersionUID = 99293;
     private Move move = new Move();
     private Random random = new Random();
@@ -31,7 +31,8 @@ public class ComputerPlayer  implements Serializable {
 
         List<Pawn> allPawnsReadyToKillList = move.allPawnsReadyToKill(pawnMap);
         List<Pawn> computerPawnsReadyToKillList = allPawnsReadyToKillList.stream()
-                .filter(e -> e.getIsRed() == isRedPlayer).collect(Collectors.toList());;
+                .filter(e -> e.getIsRed() == isRedPlayer).collect(Collectors.toList());
+        ;
 
         List<Pawn> allPawnsReadyToMoveList = move.allPawnsReadyToMove(pawnMap);
         List<Pawn> computerPawnsReadyToMoveList = allPawnsReadyToMoveList.stream()
@@ -58,7 +59,7 @@ public class ComputerPlayer  implements Serializable {
                         case DOWN_LEFT:
                             if (!dropFirstLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() - delta, pawn.getPosition().getY() + delta))) {
                                 if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() - (delta + 1), pawn.getPosition().getY() + (delta + 1)))
-                                        && (pawn.getPosition().getX() - (delta + 1)) >= 0 && (pawn.getPosition().getY() + (delta + 1))<= 7) {
+                                        && (pawn.getPosition().getX() - (delta + 1)) >= 0 && (pawn.getPosition().getY() + (delta + 1)) <= 7) {
                                     if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() - delta,
                                             pawn.getPosition().getY() + delta)).getIsRed()) {
                                         dropFirstLoop = true;
@@ -120,7 +121,8 @@ public class ComputerPlayer  implements Serializable {
                             break;
                         default:
                             break;
-                    } delta++;
+                    }
+                    delta++;
                 }
             } else {
                 switch (move.pawnPossibleKillMoves(pawnMap, pawn).get(pawn)) {
@@ -171,7 +173,7 @@ public class ComputerPlayer  implements Serializable {
                             break;
                         case UP_RIGHT:
                             if (!dropSecLoop && !pawnMap.containsKey(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() - delta))
-                                    && (pawn.getPosition().getX() + delta ) <= 7 && (pawn.getPosition().getY() - delta) >= 0) {
+                                    && (pawn.getPosition().getX() + delta) <= 7 && (pawn.getPosition().getY() - delta) >= 0) {
                                 newPosition = new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() - delta);
                                 if (delta == random.nextInt(8)) {
                                     dropSecLoop = true;
@@ -233,7 +235,7 @@ public class ComputerPlayer  implements Serializable {
 
     @Override
     public String toString() {
-        return "ComputerPlayer{"+ isRedPlayer +
+        return "ComputerPlayer{" + isRedPlayer +
                 '}';
     }
 }

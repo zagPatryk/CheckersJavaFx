@@ -3,9 +3,10 @@ package Checkers.BoardComponents;
 import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
+
 import java.util.Objects;
 
-public class Field extends Rectangle{
+public class Field extends Rectangle {
     private final int positionX;
     private final int positionY;
 

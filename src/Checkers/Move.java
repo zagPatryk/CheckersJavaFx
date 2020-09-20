@@ -4,6 +4,7 @@ import Checkers.BoardComponents.Pawn;
 import Checkers.StoringData.Direction;
 import Checkers.StoringData.MoveType;
 import Checkers.StoringData.Position;
+
 import static Checkers.StoringData.MoveType.*;
 
 import java.io.Serializable;
@@ -13,7 +14,7 @@ import static java.lang.Math.abs;
 
 public class Move implements Serializable {
     public MoveType moveType(Map<Position, Pawn> pawnMap, Pawn pawn, Position newPosition) {
-        if ((newPosition.getX() < 0 || newPosition.getX() >= 8 || newPosition.getY() < 0 || newPosition.getY() >= 8 )) {
+        if ((newPosition.getX() < 0 || newPosition.getX() >= 8 || newPosition.getY() < 0 || newPosition.getY() >= 8)) {
             return NONE;
         }
 
@@ -25,7 +26,7 @@ public class Move implements Serializable {
             return NONE;
         }
 
-        if (abs(newPosition.getY() - pawn.getPosition().getY()) != abs(newPosition.getX()- pawn.getPosition().getX())
+        if (abs(newPosition.getY() - pawn.getPosition().getY()) != abs(newPosition.getX() - pawn.getPosition().getX())
                 || newPosition.getX() == pawn.getPosition().getX()) {
             return NONE;
         }
@@ -71,13 +72,13 @@ public class Move implements Serializable {
                             pawn.getPosition().getY() + deltaY)).getIsRed() == pawn.getIsRed()) {
                         return NONE;
                     }
-               }
+                }
             }
 
             if (enemyPawn == 1) {
-               return KILL;
+                return KILL;
             } else if (enemyPawn > 1) {
-               return NONE;
+                return NONE;
             } else {
                 if (pawn.isNextMoveKill()) {
                     return NONE;
@@ -110,9 +111,9 @@ public class Move implements Serializable {
             }
         }
 
-        if (abs(newPosition.getY()- pawn.getPosition().getY()) != 1
+        if (abs(newPosition.getY() - pawn.getPosition().getY()) != 1
                 || newPosition.getX() == pawn.getPosition().getX()
-                || abs(newPosition.getX()- pawn.getPosition().getX()) != 1) {
+                || abs(newPosition.getX() - pawn.getPosition().getX()) != 1) {
             return NONE;
         }
 
@@ -141,7 +142,7 @@ public class Move implements Serializable {
         for (int i = 0; i < mobilityLoop; i++) {
             if (!dropFirstLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() - delta, pawn.getPosition().getY() + delta))) {
                 if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() - (delta + 1), pawn.getPosition().getY() + (delta + 1)))
-                        && (pawn.getPosition().getX() - (delta + 1)) >= 0 && (pawn.getPosition().getY() + (delta + 1))<= 7) {
+                        && (pawn.getPosition().getX() - (delta + 1)) >= 0 && (pawn.getPosition().getY() + (delta + 1)) <= 7) {
                     if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() - delta,
                             pawn.getPosition().getY() + delta)).getIsRed()) {
                         dropFirstLoop = true;
@@ -182,20 +183,20 @@ public class Move implements Serializable {
                 }
             }
 
-           if (!dropFtLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() - delta))) {
-               if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() + (delta + 1), pawn.getPosition().getY() - (delta + 1)))
-                       && (pawn.getPosition().getX() + (delta + 1)) <= 7 && (pawn.getPosition().getY() - (delta + 1)) >= 0) {
-                   if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() - delta)).getIsRed()) {
-                       dropFtLoop = true;
-                   } else {
-                       dropFtLoop = true;
-                       pawnPossibleKillMoves.put(pawn, Direction.UP_RIGHT);
-                   }
-               } else {
-                   dropFtLoop = true;
-               }
-           }
-           delta++;
+            if (!dropFtLoop && pawnMap.containsKey(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() - delta))) {
+                if (!pawnMap.containsKey(new Position(pawn.getPosition().getX() + (delta + 1), pawn.getPosition().getY() - (delta + 1)))
+                        && (pawn.getPosition().getX() + (delta + 1)) <= 7 && (pawn.getPosition().getY() - (delta + 1)) >= 0) {
+                    if (pawn.getIsRed() == pawnMap.get(new Position(pawn.getPosition().getX() + delta, pawn.getPosition().getY() - delta)).getIsRed()) {
+                        dropFtLoop = true;
+                    } else {
+                        dropFtLoop = true;
+                        pawnPossibleKillMoves.put(pawn, Direction.UP_RIGHT);
+                    }
+                } else {
+                    dropFtLoop = true;
+                }
+            }
+            delta++;
         }
         return pawnPossibleKillMoves;
     }
